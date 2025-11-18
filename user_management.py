@@ -17,12 +17,17 @@ def insertUser(username, password, DoB):
 def retrieveUsers(username, password):
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
-    cur.execute(f"SELECT * FROM users WHERE username = '{username}'")
+    cur.execute(
+        "SELECT * FROM users WHERE username == ? AND password == ?",
+        (username, password),
+    )
+    # cur.execute(f"SELECT * FROM users WHERE username = '{username}'")  # FIX THIS
     if cur.fetchone() == None:
         con.close()
         return False
     else:
-        cur.execute(f"SELECT * FROM users WHERE password = '{password}'")
+        # cur.execute("SELECT * FROM users WHERE password == ?", (password))
+        # FIX THIS, it is looking up password matches only
         # Plain text log of visitor count as requested by Unsecure PWA management
         with open("visitor_log.txt", "r") as file:
             number = int(file.read().strip())
@@ -31,18 +36,20 @@ def retrieveUsers(username, password):
             file.write(str(number))
         # Simulate response time of heavy app for testing purposes
         time.sleep(random.randint(80, 90) / 1000)
-        if cur.fetchone() == None:
-            con.close()
-            return False
-        else:
-            con.close()
-            return True
+
+        # if it doesn't find any users with this password
+        # if cur.fetchone() == None:
+        #     con.close()
+        #     return False
+        # else:
+        con.close()
+        return True
 
 
 def insertFeedback(feedback):
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
-    cur.execute(f"INSERT INTO feedback (feedback) VALUES ('{feedback}')")
+    cur.execute(f"INSERT INTO feedback (feedback) VALUES ('{feedback}')")  # FIX THIS
     con.commit()
     con.close()
 
