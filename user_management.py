@@ -1,14 +1,15 @@
 import sqlite3 as sql
 import time
 import random
+import security as secure
 
 
-def insertUser(username, password, DoB):
+def insertUser(username, password, DoB, salt):
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
     cur.execute(
-        "INSERT INTO users (username,password,dateOfBirth) VALUES (?,?,?)",
-        (username, password, DoB),
+        "INSERT INTO users (username,password,dateOfBirth,salt) VALUES (?,?,?,?)",
+        (username, password, DoB, salt),
     )
     con.commit()
     con.close()
@@ -17,11 +18,13 @@ def insertUser(username, password, DoB):
 def retrieveUsers(username, password):
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
+    cur.execute("SELECT salt FROM users WHERE username == ?", (username,))
+    salt = cur.fetchone()
+    hash = secure.hashPassword(password, salt[0])
     cur.execute(
         "SELECT * FROM users WHERE username == ? AND password == ?",
-        (username, password),
+        (username, hash),
     )
-    # cur.execute(f"SELECT * FROM users WHERE username = '{username}'")  # FIX THIS
     if cur.fetchone() == None:
         con.close()
         return False
